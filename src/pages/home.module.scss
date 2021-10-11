@@ -1,3 +1,7 @@
+.posts {
+  margin-bottom: 4rem;
+}
+
 .post {
   font-family: 'Inter', sans-serif;
 
@@ -40,9 +44,10 @@
 
 .loadMore {
   display: block;
-  margin: 4rem 0;
 
   font-size: 18px;
   font-weight: 600;
   color: var(--highlight);
+  border: 0;
+  background: transparent;
 }
