@@ -1,5 +1,6 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
+import Link from 'next/link';
 
 import { format } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
@@ -32,13 +33,7 @@ interface HomeProps {
 
 const formatPost = (post: Post): Post => ({
   uid: post.uid,
-  first_publication_date: format(
-    new Date(post.first_publication_date),
-    'dd MMM Y',
-    {
-      locale: ptBR,
-    }
-  ),
+  first_publication_date: post.first_publication_date,
   data: {
     title: post.data.title,
     subtitle: post.data.subtitle,
@@ -57,7 +52,7 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
         const formattedData: Post[] = json.results.map((post: Post) =>
           formatPost(post)
         );
-        console.log(json);
+
         setPosts([...posts, ...formattedData]);
         setNextPage(json.next_page);
       });
@@ -73,12 +68,16 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
         <div className={styles.posts}>
           {posts.map(post => (
             <section className={styles.post} key={post.uid}>
-              <strong>{post.data.title}</strong>
+              <Link href={`/post/${post.uid}`} key={post.uid}>
+                <a>{post.data.title}</a>
+              </Link>
               <p>{post.data.subtitle}</p>
               <div>
                 <span>
-                  <FiCalendar color="var(--info)" size={20} />{' '}
-                  {post.first_publication_date}
+                  <FiCalendar color="var(--info)" size={20} />
+                  {format(new Date(post.first_publication_date), 'dd MMM Y', {
+                    locale: ptBR,
+                  })}
                 </span>
                 <span>
                   <FiUser color="var(--info)" size={20} /> {post.data.author}

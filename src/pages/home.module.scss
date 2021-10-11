@@ -9,10 +9,15 @@
     margin-top: 3rem;
   }
 
-  strong {
+  a {
     font-size: 28px;
     font-weight: 700;
     color: var(--heading);
+    transition: opacity 0.2s;
+
+    &:hover {
+      opacity: 0.5;
+    }
   }
 
   p {
