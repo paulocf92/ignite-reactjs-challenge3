@@ -1,5 +1,8 @@
 import { GetStaticProps } from 'next';
 import Head from 'next/head';
+
+import { format } from 'date-fns';
+import ptBR from 'date-fns/locale/pt-BR';
 import { FiCalendar, FiUser } from 'react-icons/fi';
 
 import { getPrismicClient } from '../services/prismic';
@@ -27,6 +30,8 @@ interface HomeProps {
 }
 
 export default function Home({ postsPagination }: HomeProps): JSX.Element {
+  const { next_page, results } = postsPagination;
+
   return (
     <>
       <Head>
@@ -35,42 +40,21 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
 
       <main className={commonStyles.contentContainer}>
         <div className={styles.posts}>
-          <section className={styles.post}>
-            <strong>Como utilizar hooks</strong>
-            <p>Pensando em sincronização em vez de ciclos de vida.</p>
-            <div>
-              <span>
-                <FiCalendar color="var(--info)" size={20} /> 15 Mar 2021
-              </span>
-              <span>
-                <FiUser color="var(--info)" size={20} /> Joseph Oliveira
-              </span>
-            </div>
-          </section>
-          <section className={styles.post}>
-            <strong>Como utilizar hooks</strong>
-            <p>Pensando em sincronização em vez de ciclos de vida.</p>
-            <div>
-              <span>15 Mar 2021</span>
-              <span>Joseph Oliveira</span>
-            </div>
-          </section>
-          <section className={styles.post}>
-            <strong>Como utilizar hooks</strong>
-            <p>Pensando em sincronização em vez de ciclos de vida.</p>
-            <div>
-              <span>15 Mar 2021</span>
-              <span>Joseph Oliveira</span>
-            </div>
-          </section>
-          <section className={styles.post}>
-            <strong>Como utilizar hooks</strong>
-            <p>Pensando em sincronização em vez de ciclos de vida.</p>
-            <div>
-              <span>15 Mar 2021</span>
-              <span>Joseph Oliveira</span>
-            </div>
-          </section>
+          {results.map(post => (
+            <section className={styles.post} key={post.uid}>
+              <strong>{post.data.title}</strong>
+              <p>{post.data.subtitle}</p>
+              <div>
+                <span>
+                  <FiCalendar color="var(--info)" size={20} />{' '}
+                  {post.first_publication_date}
+                </span>
+                <span>
+                  <FiUser color="var(--info)" size={20} /> {post.data.author}
+                </span>
+              </div>
+            </section>
+          ))}
         </div>
         <a href="/" className={styles.loadMore}>
           Carregar mais posts
@@ -80,9 +64,38 @@ export default function Home({ postsPagination }: HomeProps): JSX.Element {
   );
 }
 
-// export const getStaticProps = async () => {
-//   // const prismic = getPrismicClient();
-//   // const postsResponse = await prismic.query(TODO);
+export const getStaticProps: GetStaticProps = async () => {
+  const prismic = getPrismicClient();
+  const postsResponse = await prismic.query('', { pageSize: 1 });
 
-//   // TODO
-// };
+  const { next_page, results: res } = postsResponse;
+
+  const results = res.map((post: Post) => {
+    const postData = {
+      uid: post.uid,
+      first_publication_date: format(
+        new Date(post.first_publication_date),
+        'dd MMM Y',
+        {
+          locale: ptBR,
+        }
+      ),
+      data: {
+        title: post.data.title,
+        subtitle: post.data.subtitle,
+        author: post.data.author,
+      },
+    };
+
+    return postData;
+  });
+
+  return {
+    props: {
+      postsPagination: {
+        next_page,
+        results,
+      },
+    },
+  };
+};
